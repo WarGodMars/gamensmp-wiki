@@ -1,0 +1,575 @@
+<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Wiki del Modpack · Gamen SMP</title><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: sticky top bar + left index rail (categories → mods) + reading column; recipes drawn as inventory-slot grids from one icon atlas */
+:root{
+  --bg:#ECEEE9; --panel:#F8F9F6; --fg:#1B2320; --muted:#5A6661; --line:#D2D7D1; --accent:#A8552A; --accent-ink:#FFFFFF; --hi:#FFF2D2; --hi-line:#D9A23A;
+  --slot:#8B8B8B; --slot-dark:#373737; --slot-light:#FFFFFF; --gui:#C6C6C6; --gui-edge:#555555;
+  --f-display:"Chakra Petch","Segoe UI",system-ui,sans-serif; --f-body:"IBM Plex Sans","Segoe UI",system-ui,sans-serif; --f-mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#141719;--panel:#1C2023;--fg:#E2E6E2;--muted:#97A29C;--line:#2D3337;--accent:#E08A50;--accent-ink:#1A0F08;--hi:#2C2516;--hi-line:#9C7428;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#141719;--panel:#1C2023;--fg:#E2E6E2;--muted:#97A29C;--line:#2D3337;--accent:#E08A50;--accent-ink:#1A0F08;--hi:#2C2516;--hi-line:#9C7428;color-scheme:dark}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{height:100%}
+body{background:var(--bg);color:var(--fg);font:15px/1.55 var(--f-body);margin:0}
+a{color:var(--accent)}
+button,input,select{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--panel);border-bottom:1px solid var(--line);padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:10px;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--fg);min-width:0}
+.brand b{font:700 20px/1 var(--f-display);letter-spacing:.01em}
+.brand small{font:500 11px/1 var(--f-mono);color:var(--muted);letter-spacing:.06em;text-transform:uppercase}
+.mark{width:28px;height:28px;flex:none;display:grid;grid-template-columns:repeat(3,1fr);gap:2px}
+.mark i{background:var(--accent);opacity:.35}.mark i:nth-child(1),.mark i:nth-child(5),.mark i:nth-child(9){opacity:1}
+.search{flex:1 1 260px;min-width:0;position:relative}
+.search input{width:100%;padding:9px 12px 9px 34px;border:1px solid var(--line);border-radius:8px;background:var(--bg)}
+.search svg{position:absolute;left:10px;top:50%;transform:translateY(-50%);width:16px;height:16px;fill:none;stroke:var(--muted);stroke-width:2}
+.tools{display:flex;gap:6px;align-items:center;margin-left:auto}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.seg button{border:0;background:transparent;padding:7px 10px;cursor:pointer;font:500 13px/1 var(--f-mono)}
+.seg button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink)}
+.menu-btn{display:none;border:1px solid var(--line);background:transparent;border-radius:8px;padding:7px 10px;cursor:pointer}
+.wrap{display:grid;grid-template-columns:270px minmax(0,1fr);min-height:calc(100% - 60px)}
+nav.rail{border-right:1px solid var(--line);padding-block:14px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:12px;position:sticky;top:calc(58px + env(safe-area-inset-top,0px));height:calc(100vh - 58px);overflow:auto}
+.rail .group{margin-bottom:14px}
+.rail h4{margin:10px 0 4px;font:600 11px/1.3 var(--f-mono);text-transform:uppercase;letter-spacing:.08em;color:var(--muted);display:flex;gap:8px;align-items:center}
+.rail h4 .dot{width:9px;height:9px;border-radius:2px;flex:none}
+.rail a{display:flex;gap:8px;align-items:center;padding:4px 8px;border-radius:6px;text-decoration:none;color:var(--fg);font-size:14px}
+.rail a:hover{background:var(--bg)}
+.rail a[aria-current="page"]{background:var(--hi);box-shadow:inset 3px 0 0 var(--hi-line)}
+.rail a .n{margin-left:auto;font:400 11px var(--f-mono);color:var(--muted)}
+main{min-width:0;padding-block:24px 64px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.col{max-width:1040px;margin:0 auto;display:flex;flex-direction:column;gap:22px}
+h1,h2,h3{font-family:var(--f-display);text-wrap:balance;line-height:1.15;margin:0}
+h1{font-size:clamp(28px,4vw,40px);font-weight:700}
+h2{font-size:24px;font-weight:600}
+h3{font-size:17px;font-weight:600}
+.lead{font-size:17px;max-width:68ch;margin:0}
+.muted{color:var(--muted)}
+.eyebrow{font:500 12px/1 var(--f-mono);letter-spacing:.08em;text-transform:uppercase;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.chip{display:inline-flex;align-items:center;gap:6px;padding:3px 8px;border-radius:999px;border:1px solid var(--line);font:500 12px/1.3 var(--f-mono);background:var(--panel);color:var(--fg)}
+.chip .dot{width:8px;height:8px;border-radius:2px}
+section{display:flex;flex-direction:column;gap:10px}
+.prose p{margin:0;max-width:72ch}
+ul.list,ol.list{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px;max-width:80ch}
+.facts{display:grid;grid-template-columns:minmax(120px,200px) minmax(0,1fr);border:1px solid var(--line);border-radius:8px;overflow:hidden;background:var(--panel)}
+.facts div{padding:8px 12px;border-top:1px solid var(--line)}
+.facts div:nth-child(-n+2){border-top:0}
+.facts div:nth-child(odd){font-weight:600;background:var(--bg)}
+.tip{background:var(--hi);border-left:3px solid var(--hi-line);padding:12px 14px;border-radius:0 8px 8px 0}
+.tip ul{margin:6px 0 0;padding-left:18px}
+.gallery{display:flex;flex-wrap:wrap;gap:8px}
+.gitem{display:flex;flex-direction:column;align-items:center;gap:4px;width:92px;text-align:center;font-size:12px;cursor:pointer;background:none;border:0;padding:6px;border-radius:8px}
+.gitem:hover{background:var(--panel)}
+.ic{width:32px;height:32px;flex:none;image-rendering:pixelated;background-repeat:no-repeat;display:inline-block}
+.ic.miss{display:inline-grid;place-items:center;background:#6b6b6b;color:#fff;border-radius:6px;font:600 12px var(--f-mono)}
+.chips{display:flex;flex-wrap:wrap;gap:6px}.hero{position:relative;border-radius:16px;overflow:hidden;background-color:#141812;background-size:100% 100%,1200px auto;background-repeat:no-repeat,repeat;background-position:0 0,right center;color:#f2f5ec;padding:clamp(22px,4vw,44px);display:grid;grid-template-columns:minmax(0,1fr) auto;gap:20px;align-items:end;min-height:300px;image-rendering:pixelated}.hero-in{display:flex;flex-direction:column;gap:12px;max-width:720px}.hero h1{margin:0;font-size:clamp(34px,5vw,56px);line-height:1.02;color:#fff;text-shadow:0 2px 0 rgba(0,0,0,.35)}.hero .lead{color:#dfe6d6}.hero .eyebrow{font:600 12px var(--f-mono);letter-spacing:.08em;text-transform:uppercase;color:#b8d69a}.hero-stats{display:flex;flex-wrap:wrap;gap:8px}.hero-stats span{background:rgba(0,0,0,.45);border:1px solid rgba(255,255,255,.14);border-radius:999px;padding:5px 12px;font:500 13px var(--f-mono);color:#e8eee0}.hero-stats b{color:#fff;font-size:15px}.hero-cta{display:flex;flex-wrap:wrap;gap:10px;margin-top:4px}.hero .hbtn{display:inline-flex;align-items:center;padding:9px 16px;border-radius:10px;font-weight:600;text-decoration:none;border:1px solid rgba(255,255,255,.4);color:#fff;background:rgba(0,0,0,.45)}.hero .hbtn.pri{background:var(--accent);border-color:var(--accent);color:#fff}.hero .hbtn:hover{filter:brightness(1.12)}.hero .hbtn:focus-visible{outline:2px solid #fff;outline-offset:2px}.hero-icons{display:grid;grid-template-columns:repeat(4,52px);gap:8px;align-self:center}.hero-ic{display:grid;place-items:center;width:52px;height:52px;border-radius:10px;background:rgba(0,0,0,.45);border:1px solid rgba(255,255,255,.12)}.dimgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px}.dimcard{display:flex;flex-direction:column;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--panel);color:var(--fg);text-decoration:none;transition:transform .15s}.dimcard:hover{transform:translateY(-2px);border-color:var(--accent)}.dimcard:focus-visible{outline:2px solid var(--accent);outline-offset:2px}.dimimg{position:relative;display:block;aspect-ratio:5/2;background-size:cover;background-position:center;image-rendering:pixelated;max-width:100%}.dimname{position:absolute;left:10px;right:10px;bottom:8px;color:#fff;font-weight:700;font-size:15px;text-shadow:0 1px 3px rgba(0,0,0,.8)}.dimmeta{display:flex;flex-direction:column;gap:4px;padding:8px 10px 10px;font-size:12.5px}.danger{display:flex;gap:3px}.danger i{width:14px;height:6px;border-radius:2px;background:var(--line)}.danger i.on{background:#c0392b}.mlogo{height:32px;width:auto;max-width:64px;object-fit:contain;flex:none}@media (max-width:760px){.hero{grid-template-columns:minmax(0,1fr)}.hero-icons{grid-template-columns:repeat(7,40px);gap:6px}.hero-ic{width:40px;height:40px}}@media (prefers-reduced-motion:reduce){.dimcard{transition:none}.dimcard:hover{transform:none}}#view.wide{max-width:1380px}#view>header.col{margin-left:0;margin-right:0;max-width:none}.homegrid{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:32px;align-items:start}.homemain{display:flex;flex-direction:column;gap:22px;min-width:0}.updates{position:sticky;top:calc(84px + env(safe-area-inset-top,0px))}.upd-card{display:flex;flex-direction:column;gap:14px;padding:16px;border:1px solid var(--line);border-radius:12px;background:var(--panel);color:var(--fg);text-decoration:none}.upd-card:hover{border-color:var(--accent)}.upd-card:focus-visible{outline:2px solid var(--accent);outline-offset:2px}.upd-h{display:flex;justify-content:space-between;align-items:center}.upd-h h2{margin:0;font-size:18px}.upd-item{display:flex;flex-direction:column;gap:4px;padding-top:12px;border-top:1px solid var(--line)}.upd-item time{font:500 12px var(--f-mono)}.upd-item p{margin:0;font-size:13.5px;line-height:1.45;color:var(--muted);display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden}.upd-tags{display:flex;flex-wrap:wrap;gap:4px;margin-top:4px}.upd-tags .chip{font-size:11px;padding:2px 6px}.chip.rem{color:#b33}.upd-all{font:600 13px var(--f-mono);color:var(--accent)}.timeline{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:0;max-width:1040px}.timeline>li{display:grid;grid-template-columns:150px minmax(0,1fr);gap:24px;padding:22px 0;border-top:1px solid var(--line)}.tl-date{font:600 13px var(--f-mono);color:var(--muted);padding-top:6px}.tl-body{display:flex;flex-direction:column;gap:10px;min-width:0}.tl-body h2{margin:0}.tl-body h3{margin:6px 0 0;font-size:15px}.upd-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}.upd-list li{display:grid;grid-template-columns:minmax(150px,240px) minmax(0,1fr);gap:4px 16px}.upd-list li span{color:var(--muted)}.upd-list.rem b{color:#b33}.pack{border:1px solid var(--line);background:var(--panel);border-radius:12px;padding:18px 20px;display:flex;flex-direction:column;gap:14px}.pack-h{display:flex;flex-wrap:wrap;gap:12px 24px;align-items:flex-end;justify-content:space-between}.pack-h h2{margin:2px 0 6px}.pack-h p{margin:0;max-width:62ch}.pack-btns{display:flex;flex-wrap:wrap;gap:8px}.pbtn{display:inline-flex;align-items:center;padding:9px 16px;border-radius:10px;font:600 14px/1.2 inherit;font-family:inherit;text-decoration:none;cursor:pointer;border:1px solid var(--line);color:var(--fg);background:transparent}.pbtn.pri{background:var(--accent);border-color:var(--accent);color:#fff}.pbtn:hover{filter:brightness(1.1)}.pbtn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}.pack .steps code,.upd-mods code{font-size:12px}.upd-dl{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center}.pbtn[aria-disabled]{opacity:.6;cursor:default}.upd-mods{border:1px solid var(--line);border-radius:10px;padding:8px 12px;background:var(--panel)}.upd-mods summary{cursor:pointer;font-weight:600}.upd-mods p{margin:6px 0}.upd-mods ul{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,320px),1fr));gap:4px 16px}.upd-mods li{min-width:0;overflow-wrap:anywhere;font:13px/1.5 var(--f-mono)}.upd-mods small{font-size:11px}@media (max-width:1100px){.homegrid{grid-template-columns:minmax(0,1fr)}.updates{position:static;order:-1}}@media (max-width:640px){.timeline>li{grid-template-columns:minmax(0,1fr);gap:6px}.upd-list li{grid-template-columns:minmax(0,1fr)}}.sgform{display:flex;flex-wrap:wrap;gap:10px 14px;margin:10px 0 6px}.sgf{display:flex;flex-direction:column;gap:4px;font:500 12px/1.3 var(--f-mono);color:var(--muted)}.sgf select{font:14px var(--f-body,inherit);padding:6px 8px;border-radius:8px;border:1px solid var(--line);background:var(--panel);color:var(--fg);max-width:260px}
+.tw{overflow-x:auto;border:1px solid var(--line);border-radius:8px;background:var(--panel)}
+table{border-collapse:collapse;width:100%;font-size:13.5px}
+th,td{padding:7px 10px;text-align:left;border-bottom:1px solid var(--line);vertical-align:middle}
+th{font:600 12px/1.2 var(--f-mono);text-transform:uppercase;letter-spacing:.04em;color:var(--muted);background:var(--bg);white-space:nowrap}
+th.sort{cursor:pointer}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums;font-family:var(--f-mono)}
+tr:last-child td{border-bottom:0}
+.cell-i{display:flex;gap:8px;align-items:center}
+.cell-i .ic{width:24px;height:24px}
+.bar{height:10px;border-radius:2px;background:var(--accent);min-width:2px}
+.rgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px}
+.rcard{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:10px;display:flex;flex-direction:column;gap:6px;min-width:0}
+.rname{font-weight:600;font-size:14px;line-height:1.25}
+.rmeta{font:400 12px/1.4 var(--f-mono);color:var(--muted)}
+.rtip{font-size:12.5px;font-style:italic;color:var(--muted)}
+.gui{display:inline-flex;align-items:center;gap:8px;background:var(--gui);border:2px solid var(--gui-edge);border-radius:4px;padding:6px;align-self:flex-start;max-width:100%;flex-wrap:wrap}
+.slots{display:grid;gap:2px}
+.slot{width:36px;height:36px;background:var(--slot);border-top:2px solid var(--slot-dark);border-left:2px solid var(--slot-dark);border-bottom:2px solid var(--slot-light);border-right:2px solid var(--slot-light);display:grid;place-items:center;position:relative;cursor:pointer;padding:0}
+.slot.empty{cursor:default}
+.slot .cnt{position:absolute;right:1px;bottom:-1px;font:700 12px/1 var(--f-mono);color:#fff;text-shadow:1px 1px 0 #3e3e3e}
+.slot .tag{position:absolute;left:2px;top:0;font:700 10px/1 var(--f-mono);color:#ffe178;text-shadow:1px 1px 0 #3e3e3e}
+.slot.fluid::after{content:"";width:20px;height:20px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);background:#3f76e4}
+.arrow{width:26px;height:16px;position:relative;flex:none}
+.arrow::before{content:"";position:absolute;left:0;top:5px;width:16px;height:6px;background:#8B8B8B}
+.arrow::after{content:"";position:absolute;right:0;top:0;border-left:10px solid #8B8B8B;border-top:8px solid transparent;border-bottom:8px solid transparent}
+.toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.toolbar input,.toolbar select{padding:7px 10px;border:1px solid var(--line);border-radius:8px;background:var(--panel)}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;border-bottom:1px solid var(--line);padding-bottom:8px}
+.tabs button{border:1px solid var(--line);background:var(--panel);border-radius:999px;padding:6px 12px;cursor:pointer;font-size:13.5px}
+.tabs button[aria-selected="true"]{background:var(--fg);color:var(--bg);border-color:var(--fg)}
+.igrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:6px}
+.iitem{display:flex;gap:8px;align-items:center;padding:5px 6px;border-radius:6px;background:none;border:1px solid transparent;text-align:left;cursor:pointer;font-size:13px;min-width:0}
+.iitem span:last-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.iitem:hover{border-color:var(--line);background:var(--panel)}
+.btn{border:1px solid var(--line);background:var(--panel);border-radius:8px;padding:7px 12px;cursor:pointer}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px}
+.mcard{display:flex;gap:10px;align-items:flex-start;padding:12px;border:1px solid var(--line);border-radius:8px;background:var(--panel);text-decoration:none;color:var(--fg)}
+.mcard:hover{border-color:var(--accent)}
+.mcard b{display:block;font-family:var(--f-display);font-weight:600}
+.mcard small{color:var(--muted);font-size:12.5px;line-height:1.35;display:block}
+.steps{counter-reset:s;list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.steps li{counter-increment:s;display:grid;grid-template-columns:30px minmax(0,1fr);gap:10px;align-items:start}
+.steps li::before{content:counter(s);font:600 13px/28px var(--f-mono);text-align:center;background:var(--fg);color:var(--bg);border-radius:4px;height:28px}
+.prog{display:grid;gap:0;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:var(--panel)}
+.prog div{display:grid;grid-template-columns:150px minmax(0,1fr);gap:12px;padding:10px 12px;border-top:1px solid var(--line)}
+.prog div:first-child{border-top:0}
+.prog b{font-family:var(--f-display)}
+.drawer{position:fixed;inset:0 0 0 auto;width:min(520px,100%);background:var(--panel);border-left:1px solid var(--line);z-index:40;overflow:auto;padding-top:calc(16px + env(safe-area-inset-top,0px));padding-bottom:calc(24px + env(safe-area-inset-bottom,0px));padding-left:20px;padding-right:max(20px,env(safe-area-inset-right,0px));box-shadow:-12px 0 30px rgba(0,0,0,.18);display:flex;flex-direction:column;gap:14px}
+.scrim{position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:35}
+.drawer header{display:flex;gap:12px;align-items:center}
+.drawer header .ic{width:48px;height:48px}
+.close{margin-left:auto}
+.results{display:flex;flex-direction:column;gap:14px}
+.hbars{display:grid;grid-template-columns:minmax(120px,240px) minmax(0,1fr) 48px;gap:6px 10px;align-items:center;font-size:13px}
+.hbars .lbl{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hbars .track{height:12px;background:var(--bg);border-radius:2px;overflow:hidden}
+.hbars .fill{height:100%;border-radius:2px}
+.hbars .v{font:500 12px var(--f-mono);text-align:right;font-variant-numeric:tabular-nums}
+.danger{font-family:var(--f-mono);letter-spacing:.1em;white-space:nowrap}
+@media (max-width:860px){
+  .wrap{grid-template-columns:minmax(0,1fr)}
+  nav.rail{position:fixed;inset:0 auto 0 0;width:min(300px,85%);z-index:30;background:var(--panel);height:100%;padding-top:calc(16px + env(safe-area-inset-top,0px));transform:translateX(-105%);transition:transform .2s}
+  nav.rail.open{transform:none}
+  .menu-btn{display:inline-block}
+  .search{order:3;flex-basis:100%}
+  .brand small{display:none}
+  .facts{grid-template-columns:minmax(0,1fr)}
+  .facts div:nth-child(odd){border-top:1px solid var(--line)}
+  .prog div{grid-template-columns:minmax(0,1fr)}
+  .hbars{grid-template-columns:minmax(90px,140px) minmax(0,1fr) 40px}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<header class="top">
+  <button class="menu-btn" id="menuBtn" aria-label="Menu">☰</button>
+  <a class="brand" href="#home"><span class="mark" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span><span><b id="brandName">Wiki del Modpack</b><br><small>Minecraft 1.21.1+</small></span></a>
+  <label class="search"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg><input id="q" type="search" autocomplete="off" placeholder="Buscar mods, objetos y recetas…"></label>
+  <div class="tools">
+    <div class="seg" role="group" aria-label="Idioma / Language" title="Español / English"><button id="lang-es" aria-pressed="true">ES</button><button id="lang-en" aria-pressed="false">EN</button></div>
+  </div>
+</header>
+<div class="wrap">
+  <nav class="rail" id="rail" aria-label="Mods"></nav>
+  <main><div class="col" id="view"><p class="muted" id="loading">Cargando la wiki… / Loading the wiki…</p></div></main>
+</div>
+<div class="scrim" id="scrim" hidden></div>
+<aside class="drawer" id="drawer" hidden aria-live="polite"></aside>
+
+<style>.ic:not(.miss){background-image:url(assets/atlas.webp)}</style>
+
+<script>
+(function(){
+const UI={
+ es:{search:'Buscar mods, objetos y recetas…',home:'Inicio',compare:'Comparativas',start:'Cómo empezar',guide:'Guía detallada',feat:'Qué añade',inter:'Cómo interactúa con otros mods',facts:'Datos rápidos',tips:'Consejos',tip:'Consejo',gallery:'Objetos destacados',biomes:'Biomas',bestiary:'Bestiario',recipes:'Recetas',items:'Todos los objetos',showAll:'Mostrar todos',filter:'Filtrar…',
+  cls:{gear:'Equipo',machine:'Máquinas y bloques',material:'Materiales'},all:'Todo',hp:'Vida',atk:'Ataque',ar:'Armadura',creature:'Criatura',
+  weapons:'Armas del mod',armor:'Armaduras del mod',item:'Objeto',dmg:'Daño',spd:'Vel.',dps:'DPS',dur:'Durab.',notes:'Notas',mod:'Mod',set:'Set',hd:'Cab.',ch:'Pecho',lg:'Pier.',ft:'Pies',tot:'Total',tough:'Dureza',kb:'Emp.',ench:'Enc.',
+  madeBy:'Cómo se fabrica',usedIn:'Se usa en',noRecipe:'No hay receta de equipo/máquina extraída para este objeto (puede obtenerse como botín, de mobs o con una receta no incluida). Consulta JEI/EMI en el juego.',fromMod:'Mod',close:'Cerrar',
+  resMods:'Mods',resItems:'Objetos',noRes:'Sin resultados.',steps:'Pasos',loops:'bucles',heat:'Calor',variants:{color:'variantes de color',wood:'variantes de madera',gem:'variantes de gema'},
+  first:'Primeros pasos en el servidor',prog:'Ruta de progresión recomendada',keys:'Teclas importantes',key:'Tecla',action:'Acción',
+  intro:'Wiki del Modpack',introSub:'Guía de los {n} mods del servidor: qué añaden, recetas de equipo y máquinas, dimensiones, bestiario y comparativas.',browse:'Explorar por categoría',
+  cw:'Armas',ca:'Armaduras',wtype:'Tipo',wk:{all:'Todas',sword:'Espadas',axe:'Hachas',heavy:'Martillos y mazas',pole:'Lanzas y guadañas',small:'Cuchillos y hoces'},wkn:{sword:'Espada',greatsword:'Mandoble',axe:'Hacha',battleaxe:'Hacha de batalla',hammer:'Martillo',mace:'Maza',spear:'Lanza',scythe:'Guadaña',knife:'Cuchillo',sickle:'Hoz'},ct:'Utilidad',csg:'Silent Gear',heroCta1:'Explorar comparativas',heroCta2:'Ver novedades',stMods:'mods',stRec:'recetas',stDims:'dimensiones',stWeap:'armas comparadas',dimsH:'Dimensiones',dimsSub:'Quince mundos por descubrir. Pulsa una para ver cómo llegar y qué encontrarás.',danger:'Peligro',upd:'Últimas actualizaciones',updAll:'Ver todo el historial',updPage:'Historial del modpack',updIntro:'Todos los cambios del modpack, del más reciente al más antiguo. En cada actualización verás los mods más importantes que se añadieron o quitaron y por qué importan en el pack.',updAdded:'Añadido',updRemoved:'Retirado',updNotes:'Notas',updZip:'Archivo para jugadores',updMore:'y más',updBack:'Volver al inicio',packEy:'Descarga directa',packH:'Modpack completo',zipBtn:'Descargar el modpack completo',zipSoon:'Enlace disponible pronto',zipP:'Un solo .zip con los {n} mods del servidor. Lo descomprimes directamente en tu carpeta mods y listo: no hace falta ningún launcher especial.',zipSteps:['Instala <a href="https://neoforged.net/" target="_blank" rel="noopener">NeoForge 21.1.251</a> para Minecraft 1.21.1 (el instalador crea el perfil en el launcher de Minecraft).','Descarga el zip del modpack completo.','Abre tu carpeta <code>mods</code> (en Windows: <code>%appdata%\\.minecraft\\mods</code>), borra los mods antiguos y descomprime ahí el zip.','Asigna al menos 8 GB de RAM en el perfil de NeoForge y entra al servidor.'],updDl:'Descargar esta actualización',updDlNote:'{n} mods · descomprime el zip en tu carpeta mods',packP:'Todos los mods del servidor en un solo archivo .mrpack: lo importas en Modrinth App o Prism Launcher y descarga los {n} mods y NeoForge 21.1.251 por ti.',packBtn:'Descargar el modpack',packAlt:'Enlace directo .mrpack',packSteps:['Descarga el modpack (se guarda como <code>GamenSMP.mrpack.zip</code>). En Prism Launcher: <b>Añadir instancia → Importar</b> y elige el archivo tal cual. En Modrinth App: quita el <code>.zip</code> del nombre y abre el <code>.mrpack</code> (o arrástralo a la app).','Copia los jars de {zip} (en Discord, 13,4 MB) en la carpeta <code>mods</code> de la instancia: son mods que solo están en CurseForge.','Descarga {tf} 4.8.3345 (27 MB, demasiado grande para Discord) y ponlo también en <code>mods</code>.','Asigna al menos 8 GB de RAM a la instancia y entra al servidor.'],packSaved:'Descarga lista.',packErr:'No se pudo descargar aquí. Abre la wiki en claude.ai o pide GamenSMP.mrpack en Discord.',updMods:'Mods de esta actualización',updModsNote:'Descarga directa de cada jar. Los marcados CurseForge abren su página de archivos.',cet:'Encantamientos y rasgos',etE:'Encantamientos',etT:'Rasgos de Silent Gear',etSearch:'Buscar…',etMax:'Nivel máx.',etFor:'Se aplica a',etDesc:'Qué hace',etGet:'Obtención',etTable:'Mesa de encantamientos',etTre:'Solo tesoro (cofres, aldeanos, pesca)',etCur:'Maldición',etOther:'Especial',etFrom:'Materiales que lo dan',etNone:'Ningún material del pack lo da de base',etIntroE:'Todos los encantamientos del pack (vanilla y de mods), con su descripción, nivel máximo y a qué se aplican. Las descripciones son las del mod Enchantment Descriptions, que también las muestra en el juego.',etIntroT:'Los rasgos (traits) de Silent Gear vienen de los materiales usados en cada pieza. El nivel final depende de la combinación; aquí ves qué materiales lo dan y en qué pieza.',parts:{main:'cabeza',rod:'mango',tip:'punta',grip:'empuñadura',binding:'atadura',coating:'recubrimiento'},tk:{all:'Todas',pickaxe:'Picos',shovel:'Palas',axe:'Hachas',hoe:'Azadas',multi:'Multiherramientas',area:'En área',harvest:'Hoces y guadañas'},tkn:{pickaxe:'Pico',shovel:'Pala',axe:'Hacha',hoe:'Azada',paxel:'Paxel',hammer:'Martillo',excavator:'Excavadora',mattock:'Zapapico',sickle:'Hoz',scythe:'Guadaña',saw:'Sierra',prospector_hammer:'Martillo de prospector'},lvlN:['Madera / oro (piedra, carbón)','Piedra (hierro, lapislázuli)','Hierro (diamante, oro, redstone)','Diamante (obsidiana, restos antiguos)','Netherita (todo)','Todo'],mlvl:'Nivel de minado',ench2:'Encantab.',toolMats:'Materiales de herramientas (resumen)',utilNote:'Velocidad de minado = rapidez rompiendo los bloques de su tipo (piedra/minerales el pico, tierra/arena la pala, madera el hacha, hojas/cultivos la azada). El nivel indica los minerales más duros que puede extraer.',sgIntro:'Calculadora de Silent Gear: elige el tipo de equipo y las piezas. La tabla muestra todas las combinaciones posibles con los materiales disponibles en el pack, calculadas con las fórmulas del mod (versión 4.2.1). No incluye los efectos de los rasgos (traits) ni las calidades del Material Grader.',sgType:'Tipo de equipo',sgHead:'Cabeza / pieza principal',sgRod:'Mango (rod)',sgTip:'Punta (tip)',sgGrip:'Empuñadura (grip)',sgBind:'Atadura (binding)',sgCoat:'Recubrimiento (coating)',sgAll:'Todos',sgNone:'Ninguno',sgSort:'Ordenar por',sgRows:'combinaciones',sgShown:'mostrando las primeras',sgTraits:'Rasgos',sgW:'Armas',sgT:'Herramientas',sgA:'Armadura',hspd:'Vel. minado',tier:'Nivel',armor2:'Armadura',magic:'Arm. mágica',sgSyn:'Cada pieza usa un solo material (sinergia 100 %). Mezclar materiales en una misma pieza cambia los valores.',cb:'Jefes',cd:'Dimensiones',cm:'Transporte',cr:'A distancia',tiers:'Escalera de niveles',
+  access:'Acceso',danger:'Peligro',bestW:'Mejor arma',bestA:'Mejor armadura',method:'Método',ideal:'Ideal para',cost:'Coste / requisito',type:'Tipo',material:'Material',mining:'Vel. minado',bonus:'Daño extra',
+  excluded:'Mods de la lista no incluidos (sin versión 1.21.1+)',recCount:'recetas',itemCount:'objetos',mobsCount:'criaturas',tagNote:'# = acepta cualquier objeto de esa etiqueta',
+  cannons:'Materiales de cañón',charges:'Cargas seguras',weight:'Peso',fail:'Si se sobrecarga',spread:'Dispersión mín.',backpack:'Mochila',slots:'Ranuras',upslots:'Ranuras de mejora',upgrade:'Mejora',mult:'Multiplicador',
+  amArmor:'Piezas de armadura',slot:'Pieza',eff:'Efecto',menu:'Menú',version:'Versión instalada',side_S:'solo servidor',side_C:'solo jugadores',notInst:'no está en el servidor'},
+ en:{search:'Search mods, items and recipes…',home:'Home',compare:'Comparisons',start:'Getting started',guide:'Detailed guide',feat:'What it adds',inter:'How it interacts with other mods',facts:'Quick facts',tips:'Tips',tip:'Tip',gallery:'Featured items',biomes:'Biomes',bestiary:'Bestiary',recipes:'Recipes',items:'All items',showAll:'Show all',filter:'Filter…',
+  cls:{gear:'Gear',machine:'Machines & blocks',material:'Materials'},all:'All',hp:'Health',atk:'Attack',ar:'Armour',creature:'Creature',
+  weapons:'Mod weapons',armor:'Mod armour',item:'Item',dmg:'Dmg',spd:'Spd',dps:'DPS',dur:'Dur.',notes:'Notes',mod:'Mod',set:'Set',hd:'Head',ch:'Chest',lg:'Legs',ft:'Feet',tot:'Total',tough:'Tough.',kb:'KB',ench:'Ench.',
+  madeBy:'How it is made',usedIn:'Used in',noRecipe:'No gear/machine recipe was extracted for this item (it may be loot, a mob drop or use a recipe not included). Check JEI/EMI in game.',fromMod:'Mod',close:'Close',
+  resMods:'Mods',resItems:'Items',noRes:'No results.',steps:'Steps',loops:'loops',heat:'Heat',variants:{color:'colour variants',wood:'wood variants',gem:'gem variants'},
+  first:'First steps on the server',prog:'Recommended progression path',keys:'Important keybinds',key:'Key',action:'Action',
+  intro:'Modpack Wiki',introSub:'Guide to the server\'s {n} mods: what they add, gear and machine recipes, dimensions, bestiary and comparisons.',browse:'Browse by category',
+  cw:'Weapons',ca:'Armour',wtype:'Type',wk:{all:'All',sword:'Swords',axe:'Axes',heavy:'Hammers & maces',pole:'Spears & scythes',small:'Knives & sickles'},wkn:{sword:'Sword',greatsword:'Greatsword',axe:'Axe',battleaxe:'Battleaxe',hammer:'Hammer',mace:'Mace',spear:'Spear',scythe:'Scythe',knife:'Knife',sickle:'Sickle'},ct:'Utility',csg:'Silent Gear',heroCta1:'Explore comparisons',heroCta2:'See what is new',stMods:'mods',stRec:'recipes',stDims:'dimensions',stWeap:'weapons compared',dimsH:'Dimensions',dimsSub:'Fifteen worlds to discover. Pick one to see how to get there and what you will find.',danger:'Danger',upd:'Latest updates',updAll:'See the full history',updPage:'Modpack history',updIntro:'Every modpack change, newest first. Each update lists the most important mods added or removed and why they matter in the pack.',updAdded:'Added',updRemoved:'Removed',updNotes:'Notes',updZip:'Player file',updMore:'and more',updBack:'Back to home',packEy:'Direct download',packH:'Full modpack',zipBtn:'Download the full modpack',zipSoon:'Link coming soon',zipP:'A single .zip with all {n} server mods. Unzip it straight into your mods folder and you are done: no special launcher needed.',zipSteps:['Install <a href="https://neoforged.net/" target="_blank" rel="noopener">NeoForge 21.1.251</a> for Minecraft 1.21.1 (the installer adds the profile to the Minecraft launcher).','Download the full modpack zip.','Open your <code>mods</code> folder (on Windows: <code>%appdata%\\.minecraft\\mods</code>), delete the old mods and unzip the file there.','Give the NeoForge profile at least 8 GB of RAM and join the server.'],updDl:'Download this update',updDlNote:'{n} mods · unzip it into your mods folder',packP:'Every server mod in a single .mrpack file: import it in the Modrinth App or Prism Launcher and it downloads all {n} mods plus NeoForge 21.1.251 for you.',packBtn:'Download the modpack',packAlt:'Direct .mrpack link',packSteps:['Download the modpack (it saves as <code>GamenSMP.mrpack.zip</code>). In Prism Launcher: <b>Add Instance → Import</b> and pick the file as is. In the Modrinth App: remove <code>.zip</code> from the name and open the <code>.mrpack</code> (or drag it onto the app).','Copy the jars from {zip} (on Discord, 13.4 MB) into the instance\'s <code>mods</code> folder: these mods are only on CurseForge.','Download {tf} 4.8.3345 (27 MB, too big for Discord) and put it in <code>mods</code> too.','Give the instance at least 8 GB of RAM and join the server.'],packSaved:'Download ready.',packErr:'Could not download here. Open the wiki on claude.ai or ask for GamenSMP.mrpack on Discord.',updMods:'Mods in this update',updModsNote:'Direct download for each jar. Ones marked CurseForge open their files page.',cet:'Enchants & traits',etE:'Enchantments',etT:'Silent Gear traits',etSearch:'Search…',etMax:'Max lvl',etFor:'Applies to',etDesc:'What it does',etGet:'How to get',etTable:'Enchanting table',etTre:'Treasure only (chests, villagers, fishing)',etCur:'Curse',etOther:'Special',etFrom:'Materials that give it',etNone:'No material in the pack gives it by default',etIntroE:'Every enchantment in the pack (vanilla and modded), with its description, max level and what it applies to. Descriptions come from the Enchantment Descriptions mod, which also shows them in game.',etIntroT:'Silent Gear traits come from the materials used in each part. The final level depends on the combination; here you can see which materials give each trait and in which part.',parts:{main:'head',rod:'rod',tip:'tip',grip:'grip',binding:'binding',coating:'coating'},tk:{all:'All',pickaxe:'Pickaxes',shovel:'Shovels',axe:'Axes',hoe:'Hoes',multi:'Multi-tools',area:'Area tools',harvest:'Sickles & scythes'},tkn:{pickaxe:'Pickaxe',shovel:'Shovel',axe:'Axe',hoe:'Hoe',paxel:'Paxel',hammer:'Hammer',excavator:'Excavator',mattock:'Mattock',sickle:'Sickle',scythe:'Scythe',saw:'Saw',prospector_hammer:'Prospector hammer'},lvlN:['Wood / gold (stone, coal)','Stone (iron, lapis)','Iron (diamond, gold, redstone)','Diamond (obsidian, ancient debris)','Netherite (everything)','Everything'],mlvl:'Mining level',ench2:'Ench.',toolMats:'Tool materials (summary)',utilNote:'Mining speed = how fast it breaks the blocks it is made for (stone/ores for pickaxes, dirt/sand for shovels, wood for axes, leaves/crops for hoes). The level shows the hardest ores it can mine.',sgIntro:'Silent Gear calculator: pick a gear type and parts. The table shows every possible combination with the materials available in the pack, computed with the mod\'s own formulas (version 4.2.1). Trait effects and Material Grader grades are not included.',sgType:'Gear type',sgHead:'Head / main part',sgRod:'Rod',sgTip:'Tip',sgGrip:'Grip',sgBind:'Binding',sgCoat:'Coating',sgAll:'All',sgNone:'None',sgSort:'Sort by',sgRows:'combinations',sgShown:'showing the first',sgTraits:'Traits',sgW:'Weapons',sgT:'Tools',sgA:'Armour',hspd:'Mining spd',tier:'Tier',armor2:'Armour',magic:'Magic arm.',sgSyn:'Each part uses a single material (100% synergy). Mixing materials inside one part changes the values.',cb:'Bosses',cd:'Dimensions',cm:'Transport',cr:'Ranged',tiers:'Tier ladder',
+  access:'Access',danger:'Danger',bestW:'Best weapon',bestA:'Best armour',method:'Method',ideal:'Best for',cost:'Cost / requirement',type:'Type',material:'Material',mining:'Mining speed',bonus:'Bonus dmg',
+  excluded:'Listed mods not included (no 1.21.1+ version)',recCount:'recipes',itemCount:'items',mobsCount:'creatures',tagNote:'# = accepts any item of that tag',
+  cannons:'Cannon materials',charges:'Max safe charges',weight:'Weight',fail:'On overload',spread:'Min. spread',backpack:'Backpack',slots:'Slots',upslots:'Upgrade slots',upgrade:'Upgrade',mult:'Multiplier',
+  amArmor:'Armour pieces',slot:'Slot',eff:'Effect',menu:'Menu',version:'Installed version',side_S:'server only',side_C:'players only',notInst:'not on the server'}
+};
+let D=null, lang='es', ITEMIDX=null, PRODUCES=null, USES=null;
+try{const s=localStorage.getItem('mpw-lang'); if(s==='en'||s==='es') lang=s;}catch(e){}
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const u=()=>UI[lang];
+const nm=id=>{const n=D.names[id]; return n?(lang==='es'?n[0]:n[1]):(id||'?').split(':').pop().replace(/_/g,' ')};
+function icon(id,size){
+  const k=D.pos[id]; const s=size||32;
+  if(k===undefined){const t=(nm(id)||'?').replace(/[^A-Za-z0-9 ]/g,' ').trim().split(/\s+/).map(w=>w[0]).join('').slice(0,2).toUpperCase();return `<span class="ic miss" style="width:${s}px;height:${s}px">${esc(t)}</span>`}
+  const sc=s/D.S, x=(k%D.cols)*s, y=Math.floor(k/D.cols)*s;
+  return `<span class="ic" style="width:${s}px;height:${s}px;background-size:${D.cols*D.S*sc}px auto;background-position:-${x}px -${y}px" role="img" aria-label="${esc(nm(id))}"></span>`;
+}
+function slot(x){
+  if(!x) return '<span class="slot empty"></span>';
+  if(x.f) return `<span class="slot fluid empty" title="${esc(x.f)}${x.a?' · '+x.a+' mB':''}"></span>`;
+  return `<button class="slot" data-item="${esc(x.i)}" title="${esc(nm(x.i))}${x.t?' (#)':''}">${icon(x.i)}${x.t?'<span class="tag">#</span>':''}${x.c?`<span class="cnt">${x.c}</span>`:''}${x.p?`<span class="tag">${Math.round(x.p*100)}%</span>`:''}</button>`;
+}
+function station(t){const s=D.stations[t]; return s?s[L()]:t.split(':').pop().replace(/[_\/]/g,' ')}
+function L(){return lang==='es'?0:1}
+function recipeGui(r){
+  let left='';
+  if(r.g){
+    const rows=r.g.length, cols=Math.max(...r.g.map(x=>x.length));
+    const cells=[]; const oR=rows<3?Math.floor((3-rows)/2):0, oC=cols<3?Math.floor((3-cols)/2):0;
+    for(let i=0;i<3;i++)for(let j=0;j<3;j++){const rr=i-oR,cc=j-oC; cells.push(slot(r.g[rr]&&r.g[rr][cc]))}
+    left=`<span class="slots" style="grid-template-columns:repeat(3,36px)">${cells.join('')}</span>`;
+  } else if(r.center){
+    const pos=[0,1,2,5,8,7,6,3]; const cells=Array(9).fill(null); cells[4]=r.center; (r.in||[]).slice(0,8).forEach((x,k)=>cells[pos[k]]=x);
+    left=`<span class="slots" style="grid-template-columns:repeat(3,36px)">${cells.map(slot).join('')}</span>`;
+  } else {
+    const ins=(r.in||[]).filter(Boolean); const per=(r.k==='smithing'||r.k==='cook')?Math.max(ins.length,1):(ins.length>4?3:Math.max(ins.length,1));
+    left=`<span class="slots" style="grid-template-columns:repeat(${per},36px)">${(ins.length?ins:[null]).map(slot).join('')}</span>`;
+  }
+  const outs=r.o.filter(Boolean);
+  const right=`<span class="slots" style="grid-template-columns:repeat(${outs.length>1?2:1},36px)">${outs.map(slot).join('')}</span>`;
+  return `<span class="gui">${left}<span class="arrow" aria-hidden="true"></span>${right}</span>`;
+}
+function ingText(r){
+  const c=new Map(); const all=[...(r.g?r.g.flat():[]),...(r.center?[r.center]:[]),...(r.in||[])].filter(Boolean);
+  for(const x of all){ const k=x.f?(x.f.split(':').pop().replace(/_/g,' ')+(x.a?` (${x.a} mB)`:'')):(nm(x.i)+(x.t?' *':'')); c.set(k,(c.get(k)||0)+(x.c||1)); }
+  return [...c].map(([k,v])=>v>1?`${v}× ${k}`:k).join(', ');
+}
+function recipeCard(r){
+  const o=r.o[0]; let meta=station(r.ty);
+  if(r.st) meta+=` · ${u().steps}: `+r.st.map(s=>(D.steps[s]||[s,s])[L()]).join(' → ')+(r.lp?` (×${r.lp} ${u().loops})`:'');
+  if(r.h) meta+=` · ${u().heat}: ${r.h}`;
+  if(r.v) meta+=` · ${r.v} ${u().variants[r.vk]||''}`;
+  const tip=D.tips[o.i]?D.tips[o.i][L()]:'';
+  return `<article class="rcard">${recipeGui(r)}<div class="rname">${esc(nm(o.i))}${o.c?` ×${o.c}`:''}</div><div class="rmeta">${esc(meta)}</div><div class="rmeta">${esc(ingText(r))}</div>${tip?`<div class="rtip">${esc(tip)}</div>`:''}</article>`;
+}
+function catColor(c){return D.catcolor[c]||'#888'}
+function buildIndexes(){
+  ITEMIDX=[]; PRODUCES=new Map(); USES=new Map();
+  const seen=new Set();
+  for(const m of D.mods){
+    for(const i of m.items){ if(!seen.has(i)){seen.add(i); ITEMIDX.push([i,m.key]);} }
+    for(const r of m.recipes){
+      const o=r.o[0]; if(o&&o.i){ if(!PRODUCES.has(o.i)) PRODUCES.set(o.i,[]); PRODUCES.get(o.i).push([r,m.key]); }
+      const ins=[...(r.g?r.g.flat():[]),...(r.center?[r.center]:[]),...(r.in||[])].filter(x=>x&&x.i);
+      for(const x of new Set(ins.map(x=>x.i))){ if(!USES.has(x)) USES.set(x,[]); USES.get(x).push([r,m.key]); }
+    }
+  }
+  for(const id of Object.keys(D.names)) if(!seen.has(id)){seen.add(id); ITEMIDX.push([id,null]);}
+}
+function modOfItem(id){const ns=id.split(':')[0]; for(const m of D.mods){ if(m.items.length && m.items[0].split(':')[0]===ns) return m; } return null}
+function rail(){
+  const g=D.g[lang]; const cnt={};
+  let h=`<div class="group"><a href="#home" data-r="home">${u().home}</a><a href="#compare" data-r="compare">${u().compare}</a></div>`;
+  for(const c of D.catorder){
+    const ms=D.mods.filter(m=>m.cat===c);
+    h+=`<div class="group"><h4><span class="dot" style="background:${catColor(c)}"></span>${esc(g.cats[c])}</h4>`;
+    for(const m of ms) h+=`<a href="#m-${m.key}" data-r="m-${m.key}">${esc(m.name)}${m.recipes.length?`<span class="n">${m.recipes.length}</span>`:''}</a>`;
+    h+='</div>';
+  }
+  $('#rail').innerHTML=h; markRail();
+}
+function markRail(){const r=(location.hash||'#home').slice(1); document.querySelectorAll('#rail a').forEach(a=>a.setAttribute('aria-current',a.dataset.r===r?'page':'false'))}
+function table(head,rows,numCols){
+  numCols=numCols||[];
+  return `<div class="tw"><table><thead><tr>${head.map((h,i)=>`<th class="${numCols.includes(i)?'num':''}">${esc(h)}</th>`).join('')}</tr></thead><tbody>${rows.map(r=>`<tr>${r.map((c,i)=>`<td class="${numCols.includes(i)?'num':''}">${c}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
+}
+const f=v=>v==null?'—':(+v).toLocaleString(lang==='es'?'es-ES':'en-US',{maximumFractionDigits:2});
+function weaponRows(ws,withMod){const x=u();return ws.map(w=>[`<span class="cell-i">${icon(w.i,24)}<b>${esc(nm(w.i))}</b></span>`,esc((x.wkn||{})[w.kind]||w.kind),...(withMod?[esc(D.modnames[w.mod]||'Vanilla')]:[]),f(w.dmg),f(w.spd),f(w.dmg*w.spd),w.dur===0?'∞':f(w.dur),esc(w[lang])])}
+function armorRows(as,withMod){return as.map(a=>[`<span class="cell-i">${icon(a.i,24)}<b>${esc(a.set[lang])}</b></span>`,...(withMod?[esc(D.modnames[a.mod]||'Vanilla')]:[]),...a.vals.map(v=>v==null?'—':v),`<b>${a.tot}</b>`,f(a.t),f(a.kb),a.en_,esc(a[lang])])}
+function wHead(withMod){const x=u();return [x.item,x.wtype,...(withMod?[x.mod]:[]),x.dmg,x.spd,x.dps,x.dur,x.notes]}
+function aHead(withMod){const x=u();return [x.set,...(withMod?[x.mod]:[]),x.hd,x.ch,x.lg,x.ft,x.tot,x.tough,x.kb,x.ench,x.notes]}
+
+
+
+const HERO_ICONS=['create:wrench','twilightforest:naga_scale','aether:zanite_gemstone','eternal_starlight:orb_of_prophecy','deeperdarker:heart_of_the_deep','undergarden:catalyst','the_bumblezone:stinger_spear','silentgems:chaos_essence','mysticalagriculture:inferium_essence','farmersdelight:cooking_pot','createbigcannons:he_shell','aeronautics:levitite','atlantis:aquamarine_gem','tropicraft:pineapple'];
+function heroBlock(){const x=u(),HI=D.homeimg||{};const recs=D.mods.reduce((s,m)=>s+m.recipes.length,0);
+  const ics=HERO_ICONS.filter(i=>D.pos[i]!==undefined).map(i=>`<span class="hero-ic" title="${esc(nm(i))}">${icon(i,40)}</span>`).join('');
+  return `<section class="hero" style="background-image:linear-gradient(90deg,rgba(14,16,12,.9) 0%,rgba(14,16,12,.72) 45%,rgba(14,16,12,.15) 100%),url(${HI.hero||''})"><div class="hero-in"><div class="eyebrow">Gamen SMP · Minecraft 1.21.1 · NeoForge</div><h1>${x.intro}</h1><p class="lead">${x.introSub.replace('{n}',D.mods.length)}</p>
+   <div class="hero-stats"><span><b>${D.mods.length}</b> ${x.stMods}</span><span><b>${f(recs)}</b> ${x.stRec}</span><span><b>12</b> ${x.stDims}</span><span><b>${D.weapons.length}</b> ${x.stWeap}</span></div>
+   <div class="hero-cta"><a class="hbtn pri" href="#compare">${x.heroCta1} →</a><a class="hbtn" href="#updates">${x.heroCta2}</a></div></div><div class="hero-icons" aria-hidden="true">${ics}</div></section>`}
+const DIM_KEYS=['twilight','aether','deepaether','deeperdarker','undergarden','bumblezone','eternalstarlight','tropicraft','atlantis','astral','netherexp','bettterend','thesift','northstar','dimdungeons'];
+function dimGallery(){const x=u(),g=D.g[lang],HI=D.homeimg||{};const rows=g.dims||[];
+  return `<section><h2>${x.dimsH}</h2><p class="muted" style="margin:-6px 0 4px">${x.dimsSub}</p><div class="dimgrid">${rows.map((r,i)=>{const k=DIM_KEYS[i];const im=(HI.dims||[])[i];const lv=+r[2]||1;
+   return `<a class="dimcard" href="#m-${k}"><span class="dimimg" style="background-image:url(${im?im.img:''})"><span class="dimname">${esc(r[0])}</span></span><span class="dimmeta"><span class="danger" aria-label="${x.danger} ${lv}/3">${'<i class="on"></i>'.repeat(lv)}${'<i></i>'.repeat(Math.max(0,3-lv))}</span><span class="muted">${esc(r[1])}</span></span></a>`}).join('')}</div></section>`}
+function modThumb(m){const L=(D.homeimg||{}).logos||{};if(L[m.key])return `<img class="mlogo" src="${L[m.key]}" alt="" loading="lazy">`;return m.icons[0]?icon(m.icons.find(i=>D.pos[i]!==undefined)||m.icons[0]):icon(m.name)}
+
+/* ---------- Updates / changelog ---------- */
+function fmtDate(d){try{return new Date(d+'T12:00:00').toLocaleDateString(lang==='es'?'es-ES':'en-GB',{day:'numeric',month:'long',year:'numeric'})}catch(e){return d}}
+function updLink(k,n){return k&&D.mods.some(m=>m.key===k)?`<a href="#m-${k}">${esc(n)}</a>`:esc(n)}
+function updatesAside(){const x=u();const L=D.changelog||[];
+  return `<aside class="updates" aria-label="${x.upd}"><a class="upd-card" href="#updates"><div class="upd-h"><h2>${x.upd}</h2><span aria-hidden="true">→</span></div>${L.slice(0,3).map(e=>`<div class="upd-item"><time class="muted">${fmtDate(e.date)}</time><b>${esc(e.title[lang])}</b><p>${esc(e.sum[lang])}</p>${e.added.length?`<div class="upd-tags">${e.added.slice(0,4).map(a=>`<span class="chip">+ ${esc(a[1])}</span>`).join('')}${e.added.length>4?`<span class="chip">+${e.added.length-4} ${x.updMore}</span>`:''}${e.removed.map(a=>`<span class="chip rem">− ${esc(a[1])}</span>`).join('')}</div>`:''}</div>`).join('')}<span class="upd-all">${x.updAll} →</span></a></aside>`}
+function packBox(){const x=u(),Z=D.zips;if(!Z||!Z.full)return'';const f=Z.full;
+  const btn=f.url?`<a class="pbtn pri" href="${esc(f.url)}" target="_blank" rel="noopener">${x.zipBtn} · ${f.mb} MB</a>`:`<span class="pbtn" aria-disabled="true">${x.zipSoon}</span>`;
+  return `<section class="pack" id="modpack"><div class="pack-h"><div><div class="eyebrow muted">${x.packEy}</div><h2>${x.packH}</h2><p>${x.zipP.replace('{n}',f.n)}</p></div><div class="pack-btns">${btn}<div class="srv-ip" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:10px"><span class="muted">${lang==='es'?'IP del servidor':'Server IP'}</span><code style="font-size:15px;user-select:all">gamensmp.playghosting.com</code><button class="pbtn" type="button" data-copyip="gamensmp.playghosting.com">${lang==='es'?'Copiar':'Copy'}</button></div></div></div><ol class="steps">${x.zipSteps.map(t=>`<li><span>${t}</span></li>`).join('')}</ol></section>`}
+function viewUpdates(){const x=u();const L=D.changelog||[];
+  let h=`<header class="col" style="gap:10px"><div class="eyebrow muted"><a href="#home">← ${x.updBack}</a></div><h1>${x.updPage}</h1><p class="lead">${x.updIntro}</p></header>${packBox()}<ol class="timeline">`;
+  for(const e of L){
+    h+=`<li id="${e.id}"><div class="tl-date"><time>${fmtDate(e.date)}</time></div><article class="tl-body"><h2>${esc(e.title[lang])}</h2><p class="lead" style="font-size:16px">${esc(e.sum[lang])}</p>`;
+    if(e.added.length)h+=`<h3>${x.updAdded}</h3><ul class="upd-list">${e.added.map(([k,n,es,en])=>`<li><b>${updLink(k,n)}</b><span>${esc(lang==='es'?es:en)}</span></li>`).join('')}</ul>`;
+    if(e.removed.length)h+=`<h3>${x.updRemoved}</h3><ul class="upd-list rem">${e.removed.map(([k,n,es,en])=>`<li><b>${esc(n)}</b><span>${esc(lang==='es'?es:en)}</span></li>`).join('')}</ul>`;
+    const nt=(e.notes||{})[lang]||[];if(nt.length)h+=`<h3>${x.updNotes}</h3><ul class="list">${nt.map(n=>`<li>${esc(n)}</li>`).join('')}</ul>`;
+    if(e.zip)h+=`<p class="muted" style="margin:0">${x.updZip}: <code>${esc(e.zip)}</code></p>`;
+    const zz=(D.zips||{})[e.id];if(zz)h+=`<div class="upd-dl">${zz.url?`<a class="pbtn pri" href="${esc(zz.url)}" target="_blank" rel="noopener">${x.updDl} · ${zz.mb} MB</a>`:`<span class="pbtn" aria-disabled="true">${x.zipSoon}</span>`}<span class="muted">${x.updDlNote.replace('{n}',zz.n)}</span></div>`;
+    const ms=e.mods||[];if(ms.length)h+=`<details class="upd-mods"><summary>${x.updMods} (${ms.length})</summary><p class="muted">${x.updModsNote}</p><ul>${ms.map(([n,url,host,mb])=>`<li><a href="${esc(url)}" target="_blank" rel="noopener">${esc(n)}</a>${host==='cf'?' <span class="chip">CurseForge</span>':''}${mb?` <small class="muted">${mb} MB</small>`:''}</li>`).join('')}</ul></details>`;
+    h+=`</article></li>`;
+  }
+  return h+`</ol>`;
+}
+
+function viewHome(){
+  const g=D.g[lang], x=u();
+  let h=heroBlock();
+  h+=`<div class="homegrid"><div class="homemain">`;
+  h+=`<section class="prose">${g.intro.map(p=>`<p>${p}</p>`).join('')}</section>`;
+  h+=dimGallery();
+  h+=`<section><h2>${x.first}</h2><ol class="steps">${g.first.map(s=>`<li><span>${esc(s)}</span></li>`).join('')}</ol></section>`;
+  h+=`<section><h2>${x.prog}</h2><div class="prog">${g.prog.map(([a,b])=>`<div><b>${esc(a)}</b><span>${esc(b)}</span></div>`).join('')}</div></section>`;
+  h+=`<section><h2>${x.keys}</h2>${table([x.key,x.action,x.mod],g.keys.map(r=>[`<b>${esc(r[0])}</b>`,esc(r[1]),esc(r[2])]))}<p class="muted" style="margin:0">${g.keys_note}</p></section>`;
+  h+=`<section><h2>${x.browse}</h2>`;
+  for(const c of D.catorder){
+    const ms=D.mods.filter(m=>m.cat===c);
+    h+=`<h3 style="display:flex;gap:8px;align-items:center"><span class="dot" style="width:10px;height:10px;border-radius:2px;background:${catColor(c)}"></span>${esc(g.cats[c])}</h3><div class="cards">${ms.map(m=>`<a class="mcard" href="#m-${m.key}">${modThumb(m)}<span style="min-width:0"><b>${esc(m.name)}</b><small>${esc(m[lang].sum.split('. ')[0])}.</small></span></a>`).join('')}</div>`;
+  }
+  h+=`</section><section><h3>${x.excluded}</h3><div class="chips">${D.excluded.map(([n,v])=>`<span class="chip">${esc(n)} · ${v}</span>`).join('')}</div></section>`;
+  h+=`</div>${updatesAside()}</div>`;
+  return h;
+}
+function viewMod(key){
+  const m=D.mods.find(z=>z.key===key); if(!m) return viewHome();
+  const t=m[lang], x=u(), g=D.g[lang];
+  let h=`<header style="display:flex;flex-direction:column;gap:10px"><div class="eyebrow"><span class="chip"><span class="dot" style="background:${catColor(m.cat)}"></span>${esc(g.cats[m.cat])}</span><span class="muted">${m.inst===false?x.notInst:(m.ver?x.version+': '+esc(m.ver):'')+(m.side?(m.ver?' · ':'')+x['side_'+m.side]:'')}</span>${m.recipes.length?`<span class="muted">${m.recipes.length} ${x.recCount}</span>`:''}${m.items.length?`<span class="muted">${m.items.length} ${x.itemCount}</span>`:''}</div><h1>${esc(m.name)}</h1><p class="lead">${esc(t.sum)}</p></header>`;
+  if(t.facts.length) h+=`<section><h2>${x.facts}</h2><div class="facts">${t.facts.map(([a,b])=>`<div>${esc(a)}</div><div>${esc(b)}</div>`).join('')}</div></section>`;
+  const gi=m.icons.filter(i=>D.pos[i]!==undefined);
+  if(gi.length) h+=`<section><h3>${x.gallery}</h3><div class="gallery">${gi.map(i=>`<button class="gitem" data-item="${esc(i)}">${icon(i,48)}<span>${esc(nm(i))}</span></button>`).join('')}</div></section>`;
+  if(t.start.length) h+=`<section><h2>${x.start}</h2><ol class="steps">${t.start.map(s=>`<li><span>${esc(s)}</span></li>`).join('')}</ol></section>`;
+  if(t.sections.length) h+=`<section><h2>${x.guide}</h2>${t.sections.map(([tt,items])=>`<h3>${esc(tt)}</h3><ul class="list">${items.map(i=>`<li>${esc(i)}</li>`).join('')}</ul>`).join('')}</section>`;
+  h+=`<section><h2>${x.feat}</h2><ul class="list">${t.feat.map(i=>`<li>${esc(i)}</li>`).join('')}</ul></section>`;
+  if(t.inter.length) h+=`<section><h2>${x.inter}</h2><ul class="list">${t.inter.map(i=>`<li>${esc(i)}</li>`).join('')}</ul></section>`;
+  const tips=[...(t.tip?[t.tip]:[]),...t.tips];
+  if(tips.length) h+=`<div class="tip"><b>${x.tips}</b><ul>${tips.map(i=>`<li>${esc(i)}</li>`).join('')}</ul></div>`;
+  const bio=m.biomes[lang]; if(bio.length) h+=`<section><h2>${x.biomes} <span class="muted">(${bio.length})</span></h2><div class="chips">${bio.map(b=>`<span class="chip">${esc(b)}</span>`).join('')}</div></section>`;
+  if(m.mobs.length) h+=`<section><h2>${x.bestiary} <span class="muted">(${m.mobs.length})</span></h2>${table([x.creature,x.hp,x.atk,x.ar],m.mobs.map(z=>[`<b>${esc(z.n[lang])}</b>`,f(z.hp),f(z.atk),z.ar?f(z.ar):'—']),[1,2,3])}</section>`;
+  const ws=D.weapons.filter(w=>w.mod===m.key).sort((a,b)=>b.dmg-a.dmg); if(ws.length) h+=`<section><h2>${x.weapons}</h2>${table(wHead(false),weaponRows(ws,false),[2,3,4,5])}</section>`;
+  const as=D.armor.filter(a=>a.mod===m.key).sort((a,b)=>b.tot-a.tot||b.t-a.t); if(as.length) h+=`<section><h2>${x.armor}</h2>${table(aHead(false),armorRows(as,false),[1,2,3,4,5,6,7,8])}</section>`;
+  if(m.tables.includes('am_armor')) h+=`<section><h2>${x.amArmor}</h2>${table([x.item,x.slot,x.tot,x.tough,x.kb,x.eff],D.am_armor.map(r=>[`<span class="cell-i">${icon(r.i,24)}<b>${esc(nm(r.i))}</b></span>`,esc(r.slot[lang]),r.def,f(r.t),f(r.kb),esc(r.eff[lang])]),[2,3,4])}</section>`;
+  if(m.tables.includes('cannons')) h+=`<section><h2>${x.cannons}</h2>${table([x.material,x.charges,x.weight,x.fail,x.spread],D.cannon.map(r=>[esc(r[0].replace(/_/g,' ')),r[1],f(r[2]),esc(r[3]),f(r[4])]),[1,2,4])}</section>`;
+  if(m.tables.includes('backpacks')) h+=`<section><h2>${x.backpack}</h2>${table([x.backpack,x.slots,x.upslots],D.backpacks.map(r=>[esc(r[0]),r[1],r[2]]),[1,2])}</section>`;
+  if(m.tables.includes('drawers')) h+=`<section><h2>${x.upgrade}</h2>${table([x.upgrade,x.mult],D.drawers.map(r=>[esc(r[0]),'×'+r[1]]),[1])}</section>`;
+  if(m.recipes.length){
+    const cls=[...new Set(m.recipes.map(r=>r.cl))];
+    h+=`<section id="recsec"><h2>${x.recipes} <span class="muted">(${m.recipes.length})</span></h2><div class="toolbar"><input id="rf" type="search" placeholder="${x.filter}" aria-label="${x.filter}"><select id="rc" aria-label="${x.recipes}"><option value="">${x.all}</option>${cls.map(c=>`<option value="${c}">${x.cls[c]}</option>`).join('')}</select><span class="muted" style="font-size:13px">${x.tagNote}</span></div><div class="rgrid" id="rg"></div></section>`;
+  }
+  if(m.items.length) h+=`<section><h2>${x.items} <span class="muted">(${m.items.length})</span></h2><div class="toolbar"><input id="if" type="search" placeholder="${x.filter}" aria-label="${x.filter}"></div><div class="igrid" id="ig"></div><div><button class="btn" id="imore" hidden>${x.showAll}</button></div></section>`;
+  return h;
+}
+function wireMod(key){
+  const m=D.mods.find(z=>z.key===key); if(!m) return;
+  const rg=$('#rg');
+  if(rg){
+    const draw=()=>{const q=($('#rf').value||'').toLowerCase(), c=$('#rc').value;
+      const list=m.recipes.filter(r=>(!c||r.cl===c)&&(!q||nm(r.o[0].i).toLowerCase().includes(q)||ingText(r).toLowerCase().includes(q)));
+      rg.innerHTML=list.map(recipeCard).join('')||`<p class="muted">${u().noRes}</p>`;};
+    $('#rf').addEventListener('input',draw); $('#rc').addEventListener('change',draw); draw();
+  }
+  const ig=$('#ig');
+  if(ig){
+    let all=false;
+    const draw=()=>{const q=($('#if').value||'').toLowerCase();
+      const list=m.items.filter(i=>!q||nm(i).toLowerCase().includes(q)||i.includes(q));
+      const shown=(all||q)?list:list.slice(0,96);
+      ig.innerHTML=shown.map(i=>`<button class="iitem" data-item="${esc(i)}">${icon(i,24)}<span>${esc(nm(i))}</span></button>`).join('');
+      $('#imore').hidden=(all||q||list.length<=96);};
+    $('#if').addEventListener('input',draw); $('#imore').addEventListener('click',()=>{all=true;draw();}); draw();
+  }
+}
+function hbars(rows,max){return `<div class="hbars">${rows.map(r=>`<span class="lbl" title="${esc(r.l)}">${esc(r.l)}</span><span class="track"><span class="fill" style="display:block;width:${Math.max(1,r.v/max*100)}%;background:${r.c}"></span></span><span class="v">${f(r.v)}</span>`).join('')}</div>`}
+const MODC={vanilla:'#8A8A8A',twilight:'#2E7D4F',aether:'#3D8FD1',deepaether:'#7FB8E6',deeperdarker:'#0E7A8F',undergarden:'#7B6A48',eternalstarlight:'#7B4FB5',tropicraft:'#D9A01B',atlantis:'#1FA6A0',mysticalag:'#C2185B',farmersdelight:'#8D6E63',bumblezone:'#D9A400',alexsmobs:'#B5651D',netherexp:'#A33B2B',naturalist:'#5E8C3A'};
+let ctab='cw', wkind='all';
+function viewCompare(){
+  const x=u();
+  const tabs=[['cw',x.cw],['ca',x.ca],['ct',x.ct],['csg',x.csg],['cet',x.cet],['cb',x.cb],['cd',x.cd],['cm',x.cm],['cr',x.cr]];
+  return `<header style="display:flex;flex-direction:column;gap:10px"><h1>${x.compare}</h1></header><div class="tabs" role="tablist">${tabs.map(([k,l])=>`<button role="tab" data-tab="${k}" aria-selected="${k===ctab}">${l}</button>`).join('')}</div><div id="cpane" class="col" style="max-width:none"></div>`;
+}
+
+/* ---------- Utility (harvest tools) ---------- */
+let tkind='all';
+const TG={all:null,pickaxe:['pickaxe'],shovel:['shovel'],axe:['axe'],hoe:['hoe'],multi:['paxel','mattock'],area:['hammer','excavator'],harvest:['sickle','scythe']};
+function drawUtility(x){
+  let h=`<p class="muted" style="max-width:75ch">${x.utilNote}</p>`;
+  const T=D.tools2||[]; const inG=t=>!TG[tkind]||TG[tkind].includes(t.kind);
+  h+=`<div class="chips" style="margin:10px 0 12px">${Object.keys(TG).map(k=>{const n=k==='all'?T.length:T.filter(t=>TG[k].includes(t.kind)).length; return n?`<button class="chip tkbtn" data-tk="${k}" aria-pressed="${k===tkind}" style="cursor:pointer${k===tkind?';background:var(--accent);color:var(--bg);border-color:var(--accent)':''}">${x.tk[k]} · ${n}</button>`:''}).join('')}</div>`;
+  const ts=T.filter(inG).sort((a,b)=>b.spd-a.spd||(b.lvl??0)-(a.lvl??0)||b.dur-a.dur);
+  h+=hbars(ts.slice(0,60).map(t=>({l:`${nm(t.i)} · ${D.modnames[t.mod]||'Vanilla'}`,v:t.spd,c:MODC[t.mod]||'#999'})),Math.max(...ts.map(t=>t.spd),1));
+  h+=table([x.item,x.wtype,x.mod,x.mining,x.mlvl,x.dur,x.ench2],ts.map(t=>[`<span class="cell-i">${icon(t.i,24)}<b>${esc(nm(t.i))}</b></span>`,esc(x.tkn[t.kind]||t.kind),esc(D.modnames[t.mod]||'Vanilla'),f(t.spd),t.lvl==null?'—':esc(x.lvlN[Math.min(t.lvl,5)]),t.dur===0?'∞':f(t.dur),t.ench==null?'—':f(t.ench)]),[3,5,6]);
+  const ms=[...D.tools].sort((a,b)=>b[2]-a[2]);
+  h+=`<h3>${x.toolMats}</h3>`+table([x.material,x.mod,x.dur,x.mining,x.bonus,x.ench],ms.map(t=>[`<b>${esc(t[0])}</b>`,esc(t[1]),f(t[2]),f(t[3]),f(t[4]),t[5]]),[2,3,4,5]);
+  return h;
+}
+/* ---------- Silent Gear calculator ---------- */
+const SGT={w:['sword','katana','machete','spear','mace','dagger','knife'],t:['pickaxe','shovel','axe','hoe','paxel','mattock','hammer','excavator','saw','sickle','prospector_hammer'],a:['helmet','chestplate','leggings','boots']};
+const SGN={es:{sword:'Espada',katana:'Katana',machete:'Machete',spear:'Lanza',mace:'Maza',dagger:'Daga',knife:'Cuchillo',pickaxe:'Pico',shovel:'Pala',axe:'Hacha',hoe:'Azada',paxel:'Paxel',mattock:'Zapapico',hammer:'Martillo (3×3)',excavator:'Excavadora (3×3)',saw:'Sierra',sickle:'Hoz',prospector_hammer:'Martillo de prospector',helmet:'Casco',chestplate:'Peto',leggings:'Grebas',boots:'Botas'},
+ en:{sword:'Sword',katana:'Katana',machete:'Machete',spear:'Spear',mace:'Mace',dagger:'Dagger',knife:'Knife',pickaxe:'Pickaxe',shovel:'Shovel',axe:'Axe',hoe:'Hoe',paxel:'Paxel',mattock:'Mattock',hammer:'Hammer (3×3)',excavator:'Excavator (3×3)',saw:'Saw',sickle:'Sickle',prospector_hammer:'Prospector hammer',helmet:'Helmet',chestplate:'Chestplate',leggings:'Leggings',boots:'Boots'}};
+let SGS={gt:'sword',main:'*',rod:'silentgear:wood',tip:'',grip:'',binding:'',coating:'',sort:''};
+function sgChain(gt){const c=[];let g=gt;const P=D.sg.parent;while(g){c.push(g);g=P[g]||null;} if(!c.includes('all'))c.push('all');return c}
+function sgPick(e,chain){if(!e)return null;for(const g of chain){if(e[g])return e[g];}return null}
+function sgCompress(list){const out=[];for(const op of ['AVERAGE','MAX','ADD','MULTIPLY_BASE','MULTIPLY_TOTAL']){const l=list.filter(m=>m[1]===op);if(!l.length)continue;if(l.length===1){out.push(l[0]);continue}
+  if(op==='MAX'){out.push([Math.max(...l.map(m=>m[0])),op]);continue}
+  let p=l[0][0];p=p>0?p:1;let tw=0,s=0;for(const [v] of l){const w=1+v/(1+Math.abs(p));tw+=w;s+=v*w}out.push([tw>0?s/tw:s,op])}return out}
+function sgVal(parts,gt,prop,lo,hi){const chain=sgChain(gt);const mp=(D.sg.mainParts[gt]||{}).p||{};let mods=[];
+  for(const [pt,m] of parts){if(!m)continue;const l=[];const a=sgPick(((m.parts[pt]||{}).p||{})[prop],chain);if(a)l.push(a);if(pt==='main'){const b=sgPick(mp[prop],chain);if(b)l.push(b)}mods.push(...sgCompress(l))}
+  if(!mods.length)return 0;
+  const av=mods.filter(m=>m[1]==='AVERAGE');let f0=0;
+  if(av.length){let p=av[0][0];p=p>0?p:1;let tw=0,s=0;for(const [v] of av){const w=1+v/(1+Math.abs(p));tw+=w;s+=v*w}f0+=tw>0?s/tw:s}
+  for(const [v,o] of mods)if(o==='MAX')f0=Math.max(f0,v);
+  let f1=f0;for(const [v,o] of mods)if(o==='MULTIPLY_BASE')f1+=f0*v;
+  for(const [v,o] of mods)if(o==='MULTIPLY_TOTAL')f1*=1+v;
+  for(const [v,o] of mods)if(o==='ADD')f1+=v;
+  return Math.min(hi??1e9,Math.max(lo??0,f1))}
+function sgTraits(parts,gt){const chain=sgChain(gt);const m=new Map();for(const [pt,mat] of parts){if(!mat)continue;for(const [id,lv,cond] of ((mat.parts[pt]||{}).t||[])){if(cond&&!chain.includes(cond))continue;m.set(id,Math.max(m.get(id)||0,lv))}}
+  return [...m].map(([id,lv])=>`${(D.sg.traits[id]||{})[lang]||id} ${lv}`).join(', ')}
+function sgTier(parts){let best=null;for(const [pt,m] of parts){if(!m)continue;const h=(m.parts[pt]||{}).h;if(h&&(!best||h[1]>best[1]))best=h}return best}
+function sgByPart(pt){return D.sg.mats.filter(m=>m.parts[pt])}
+function sgRowsFor(){const gt=SGS.gt;const isA=SGT.a.includes(gt);const M=id=>D.sg.mats.find(m=>m.id===id)||null;
+  let mains=sgByPart('main').filter(m=>{const p=m.parts.main.p;const ch=sgChain(gt);return isA?((sgPick(p.armor_durability,ch)||[0])[0]>0):((sgPick(p.durability,ch)||[0])[0]>0)});
+  if(SGS.main!=='*')mains=mains.filter(m=>m.id===SGS.main);
+  let rods=isA?[null]:(SGS.rod==='*'?sgByPart('rod'):[M(SGS.rod)]);
+  const extra=isA?[]:[['tip',M(SGS.tip)],['binding',M(SGS.binding)],['grip',M(SGS.grip)]];
+  const rows=[];
+  for(const mm of mains)for(const rd of rods){const parts=[['main',mm],['rod',rd],...extra,['coating',M(SGS.coating)]];
+    const r={m:mm,rod:rd,tr:sgTraits(parts,gt)};
+    if(isA){const md=D.sg.armorMult[gt]||1;r.arm=sgVal(parts,gt,'armor');r.tough=sgVal(parts,gt,'armor_toughness')/4;r.kb=sgVal(parts,gt,'knockback_resistance')/10;r.mag=sgVal(parts,gt,'magic_armor');r.dur=Math.round(md*Math.floor(sgVal(parts,gt,'armor_durability')));r.ench=sgVal(parts,gt,'enchantment_value')}
+    else{r.dmg=1+sgVal(parts,gt,'attack_damage');r.spd=sgVal(parts,gt,'attack_speed',-3.9,4);r.dps=r.dmg*r.spd;r.dur=Math.round(sgVal(parts,gt,'durability'));r.hs=sgVal(parts,gt,'harvest_speed');r.ench=sgVal(parts,gt,'enchantment_value');r.tier=sgTier(parts)}
+    rows.push(r)}
+  return rows}
+function sgSel(id,label,opts,val){return `<label class="sgf"><span>${label}</span><select id="${id}">${opts.map(([v,t])=>`<option value="${esc(v)}"${v===val?' selected':''}>${esc(t)}</option>`).join('')}</select></label>`}
+function drawSG(x){
+  const gt=SGS.gt,isA=SGT.a.includes(gt),isT=SGT.t.includes(gt);
+  const mn=m=>m.n[lang]+(m.var?` (+${m.var.length})`:'');
+  const list=(pt,withAll,withNone)=>[...(withAll?[['*',x.sgAll]]:[]),...(withNone?[['',x.sgNone]]:[]),...sgByPart(pt).sort((a,b)=>a.n[lang].localeCompare(b.n[lang])).map(m=>[m.id,mn(m)])];
+  const gtOpts=[...SGT.w.map(g=>[g,`${x.sgW} · ${SGN[lang][g]}`]),...SGT.t.map(g=>[g,`${x.sgT} · ${SGN[lang][g]}`]),...SGT.a.map(g=>[g,`${x.sgA} · ${SGN[lang][g]}`])];
+  let h=`<p class="muted" style="max-width:80ch">${x.sgIntro}</p><div class="sgform">${sgSel('sg-gt',x.sgType,gtOpts,gt)}${sgSel('sg-main',x.sgHead,list('main',true,false),SGS.main)}`;
+  if(!isA)h+=sgSel('sg-rod',x.sgRod,list('rod',true,false),SGS.rod)+sgSel('sg-tip',x.sgTip,list('tip',false,true),SGS.tip)+sgSel('sg-binding',x.sgBind,list('binding',false,true),SGS.binding)+sgSel('sg-grip',x.sgGrip,list('grip',false,true),SGS.grip);
+  h+=sgSel('sg-coating',x.sgCoat,list('coating',false,true),SGS.coating);
+  const sorts=isA?[['arm',x.armor2],['tough',x.tough],['dur',x.dur],['ench',x.ench2]]:isT?[['hs',x.hspd],['dur',x.dur],['dmg',x.dmg],['ench',x.ench2]]:[['dmg',x.dmg],['dps',x.dps],['spd',x.spd],['dur',x.dur],['ench',x.ench2]];
+  if(!sorts.some(s=>s[0]===SGS.sort))SGS.sort=sorts[0][0];
+  h+=sgSel('sg-sort',x.sgSort,sorts,SGS.sort)+`</div>`;
+  const rows=sgRowsFor().sort((a,b)=>(b[SGS.sort]||0)-(a[SGS.sort]||0));
+  const LIM=400;const shown=rows.slice(0,LIM);
+  h+=`<p class="muted">${f(rows.length)} ${x.sgRows}${rows.length>LIM?` · ${x.sgShown} ${LIM}`:''}. ${x.sgSyn}</p>`;
+  const dot=m=>m?`<span class="dot" style="display:inline-block;width:10px;height:10px;border-radius:2px;background:${m.c};margin-right:6px;vertical-align:-1px"></span>${esc(m.n[lang])}`:'—';
+  const n1=v=>f(Math.round(v*100)/100);
+  if(isA) h+=table([x.sgHead,x.armor2,x.tough,x.kb,x.magic,x.dur,x.ench2,x.sgTraits],shown.map(r=>[`<b>${dot(r.m)}</b>`,n1(r.arm),n1(r.tough),n1(r.kb),n1(r.mag),f(r.dur),n1(r.ench),`<span class="muted">${esc(r.tr)}</span>`]),[1,2,3,4,5,6]);
+  else h+=table([x.sgHead,x.sgRod,x.dmg,x.spd,x.dps,x.dur,...(isT?[x.hspd,x.tier]:[]),x.ench2,x.sgTraits],shown.map(r=>[`<b>${dot(r.m)}</b>`,dot(r.rod),n1(r.dmg),n1(r.spd),n1(r.dps),f(r.dur),...(isT?[n1(r.hs),r.tier?esc(x.lvlN[Math.min(Math.floor(r.tier[1]),5)].split(' (')[0]+(r.tier[1]%1?'+':'')):'—']:[]),n1(r.ench),`<span class="muted">${esc(r.tr)}</span>`]),isT?[2,3,4,5,6,8]:[2,3,4,5,6]);
+  return h;
+}
+function wireSG(){for(const k of ['gt','main','rod','tip','binding','grip','coating','sort']){const el=document.getElementById('sg-'+k);if(el)el.onchange=()=>{SGS[k]=el.value;drawCompare();}}}
+
+
+/* ---------- Enchantments & traits ---------- */
+let etSub='e', etQ='';
+const ENCH_ITEMS={es:{armor:'Armadura',head_armor:'Casco',chest_armor:'Peto',leg_armor:'Grebas',foot_armor:'Botas',sword:'Espadas',sharp_weapon:'Espadas y hachas',weapon:'Armas cuerpo a cuerpo',fire_aspect:'Espadas y mazas',bow:'Arcos',crossbow:'Ballestas',trident:'Tridentes',mace:'Mazas',mining:'Herramientas',mining_loot:'Herramientas',fishing:'Cañas de pescar',durability:'Todo lo que tiene durabilidad',equippable:'Equipables',vanishing:'Todo'},
+ en:{armor:'Armour',head_armor:'Helmets',chest_armor:'Chestplates',leg_armor:'Leggings',foot_armor:'Boots',sword:'Swords',sharp_weapon:'Swords & axes',weapon:'Melee weapons',fire_aspect:'Swords & maces',bow:'Bows',crossbow:'Crossbows',trident:'Tridents',mace:'Maces',mining:'Tools',mining_loot:'Tools',fishing:'Fishing rods',durability:'Anything with durability',equippable:'Equippables',vanishing:'Everything'}};
+const SLOTN={es:{head:'Casco',chest:'Peto',legs:'Grebas',feet:'Botas',mainhand:'Mano principal',offhand:'Mano secundaria',armor:'Armadura',any:'Cualquiera'},en:{head:'Helmet',chest:'Chestplate',legs:'Leggings',feet:'Boots',mainhand:'Main hand',offhand:'Off hand',armor:'Armour',any:'Any'}};
+const pretty=s=>s.split('/').pop().replace(/_/g,' ').replace(/\b\w/g,c=>c.toUpperCase());
+function enchFor(e){const t=e.items;if(!t||t==='[]')return (e.slots||[]).map(s=>SLOTN[lang][s]||s).join(', ')||'—';
+  if(t.startsWith('minecraft:enchantable/'))return ENCH_ITEMS[lang][t.split('/').pop()]||pretty(t);return pretty(t)}
+function nsMod(ns){return ns==='minecraft'?'Vanilla':((D.nsname||{})[ns]||pretty(ns))}
+function drawET(x){
+  const ET=D.et;let h=`<div class="chips" style="margin:6px 0 10px">${[['e',x.etE,ET.ench.length],['t',x.etT,ET.traits.length]].map(([k,l,n])=>`<button class="chip etbtn" data-et="${k}" aria-pressed="${k===etSub}" style="cursor:pointer${k===etSub?';background:var(--accent);color:var(--bg);border-color:var(--accent)':''}">${l} · ${n}</button>`).join('')}</div>`;
+  h+=`<p class="muted" style="max-width:80ch">${etSub==='e'?x.etIntroE:x.etIntroT}</p><div class="sgform"><label class="sgf"><span>${x.etSearch}</span><input id="et-q" type="search" value="${esc(etQ)}" style="font:14px inherit;padding:6px 8px;border-radius:8px;border:1px solid var(--line);background:var(--panel);color:var(--fg);min-width:220px"></label></div>`;
+  const q=etQ.trim().toLowerCase();const hit=(...a)=>!q||a.join(' ').toLowerCase().includes(q);
+  if(etSub==='e'){
+    const rows=ET.ench.filter(e=>hit(e.n[lang],e.n.en,e.d[lang]||'',nsMod(e.ns),enchFor(e))).sort((a,b)=>(a.ns==='minecraft'?0:1)-(b.ns==='minecraft'?0:1)||nsMod(a.ns).localeCompare(nsMod(b.ns))||a.n[lang].localeCompare(b.n[lang]));
+    const roman=n=>['','I','II','III','IV','V','VI','VII','VIII','IX','X'][n]||n;
+    h+=table([x.item,x.mod,x.etMax,x.etFor,x.etDesc,x.etGet],rows.map(e=>[`<b>${esc(e.n[lang])}</b>`,esc(nsMod(e.ns)),roman(e.max),esc(enchFor(e)),esc((e.d[lang]||e.d.en||'')+(e.note?' '+e.note[lang]:'')),e.cur?`<span class="chip" style="color:#b33">${x.etCur}</span>`:e.tre?x.etTre:e.tab?x.etTable:x.etOther]),[2]);
+  } else {
+    const rows=ET.traits.filter(t=>hit(t.n[lang],t.n.en,t.d[lang],...t.src.map(s=>s[0][lang]))).sort((a,b)=>(b.src.length?1:0)-(a.src.length?1:0)||a.n[lang].localeCompare(b.n[lang]));
+    h+=table([x.item,x.etMax,x.etDesc,x.etFrom],rows.map(t=>[`<b>${esc(t.n[lang])}</b>`,t.max,esc(t.d[lang]),t.src.length?`<span class="muted">${esc((()=>{const m=new Map();for(const [n,pt,lv,c] of t.src){const k=`${n[lang]} (${x.parts[pt]||pt}${c?' · '+((SGN[lang]||{})[c]||c):''})`;m.set(k,[...(m.get(k)||[]),lv])}return [...m].map(([k,l])=>`${k} ${[...new Set(l)].sort((a,b)=>a-b).join('/')}`).join(', ')})())}</span>`:`<span class="muted">${x.etNone}</span>`]),[1]);
+  }
+  return h;
+}
+function wireET(){document.querySelectorAll('.etbtn').forEach(b=>b.onclick=()=>{etSub=b.dataset.et;drawCompare();});const q=document.getElementById('et-q');if(q){q.oninput=()=>{etQ=q.value;const pos=q.selectionStart;drawCompare();const n=document.getElementById('et-q');if(n){n.focus();n.setSelectionRange(pos,pos);}}}}
+
+function drawCompare(){
+  const x=u(), g=D.g[lang]; let h='';
+  if(ctab==='cw'){
+    const WG={all:null,sword:['sword','greatsword'],axe:['axe','battleaxe'],heavy:['hammer','mace'],pole:['spear','scythe','glaive'],small:['knife','sickle','dagger']};
+    const inG=w=>!WG[wkind]||WG[wkind].includes(w.kind);
+    h+=`<div class="chips" role="group" aria-label="${x.wtype}" style="margin-bottom:12px">${Object.keys(WG).map(k=>`<button class="chip wkbtn" data-wk="${k}" aria-pressed="${k===wkind}" style="cursor:pointer${k===wkind?';background:var(--accent);color:var(--bg);border-color:var(--accent)':''}">${x.wk[k]} · ${k==='all'?D.weapons.length:D.weapons.filter(w=>WG[k].includes(w.kind)).length}</button>`).join('')}</div>`;
+    const ws=[...D.weapons].filter(inG).filter(w=>w.i!=='twilightforest:glass_sword').sort((a,b)=>b.dmg-a.dmg);
+    h+=hbars(ws.map(w=>({l:`${nm(w.i)} · ${D.modnames[w.mod]||'Vanilla'}`,v:w.dmg,c:MODC[w.mod]||'#999'})),Math.max(...ws.map(w=>w.dmg)));
+    h+=table(wHead(true),weaponRows([...D.weapons].filter(inG).sort((a,b)=>b.dmg-a.dmg),true),[3,4,5,6]);
+  } else if(ctab==='ca'){
+    const as=[...D.armor].sort((a,b)=>b.tot-a.tot||b.t-a.t);
+    h+=hbars(as.map(a=>({l:`${a.set[lang]} · ${D.modnames[a.mod]||'Vanilla'}`,v:a.tot,c:MODC[a.mod]||'#999'})),Math.max(...as.map(a=>a.tot)));
+    h+=table(aHead(true),armorRows(as,true),[2,3,4,5,6,7,8,9]);
+    h+=`<h3>${x.tiers}</h3>`+table(['', x.cw, x.ca],g.tiers.map(r=>r.map(esc)));
+  } else if(ctab==='ct'){
+    h+=drawUtility(x);
+  } else if(ctab==='csg'){
+    h+=drawSG(x);
+  } else if(ctab==='cet'){
+    h+=drawET(x);
+  } else if(ctab==='cb'){
+    const bs=[...D.bosses].sort((a,b)=>b.hp-a.hp);
+    h+=hbars(bs.map(b=>({l:`${b.n[lang]} · ${D.modnames[b.mod]||'Vanilla'}`,v:b.hp,c:MODC[b.mod]||'#999'})),Math.max(...bs.map(b=>b.hp)));
+  } else if(ctab==='cd'){
+    h+=table([x.cd,x.access,x.danger,x.bestW,x.bestA],g.dims.map(r=>[`<b>${esc(r[0])}</b>`,esc(r[1]),`<span class="danger">${'●'.repeat(r[2]+1)}${'○'.repeat(3-r[2])}</span> ${esc(g.danger[r[2]])}`,esc(r[3]),esc(r[4])]));
+  } else if(ctab==='cm'){
+    h+=table([x.method,x.mod,x.ideal,x.cost],g.mobility.map(r=>[`<b>${esc(r[0])}</b>`,esc(r[1]),esc(r[2]),esc(r[3])]));
+  } else if(ctab==='cr'){
+    h+=table([x.cw,x.mod,x.type,x.notes],g.ranged.map(r=>[`<b>${esc(r[0])}</b>`,esc(r[1]),esc(r[2]),esc(r[3])]));
+  }
+  $('#cpane').innerHTML=h;
+  $('#cpane').querySelectorAll('.wkbtn').forEach(b=>b.onclick=()=>{wkind=b.dataset.wk;drawCompare();});
+  $('#cpane').querySelectorAll('.tkbtn').forEach(b=>b.onclick=()=>{tkind=b.dataset.tk;drawCompare();});
+  wireSG(); wireET();
+}
+function viewSearch(q){
+  const x=u(); q=q.toLowerCase();
+  const mods=D.mods.filter(m=>m.name.toLowerCase().includes(q));
+  const items=[]; for(const [i,mk] of ITEMIDX){ const n=D.names[i]; if((n&&(n[0].toLowerCase().includes(q)||n[1].toLowerCase().includes(q)))||i.includes(q)){items.push(i); if(items.length>=240) break;} }
+  let h=`<header><h1>“${esc(q)}”</h1></header>`;
+  if(mods.length) h+=`<section><h2>${x.resMods}</h2><div class="cards">${mods.map(m=>`<a class="mcard" href="#m-${m.key}"><span style="min-width:0"><b>${esc(m.name)}</b><small>${esc(D.g[lang].cats[m.cat])}</small></span></a>`).join('')}</div></section>`;
+  if(items.length) h+=`<section><h2>${x.resItems} <span class="muted">(${items.length}${items.length>=240?'+':''})</span></h2><div class="igrid">${items.map(i=>`<button class="iitem" data-item="${esc(i)}">${icon(i,24)}<span>${esc(nm(i))}</span></button>`).join('')}</div></section>`;
+  if(!mods.length&&!items.length) h+=`<p class="muted">${x.noRes}</p>`;
+  return h;
+}
+function openItem(id){
+  const x=u(); const prod=PRODUCES.get(id)||[], uses=(USES.get(id)||[]).slice(0,30);
+  const mod=D.mods.find(m=>m.items.includes(id));
+  const tip=D.tips[id]?D.tips[id][L()]:'';
+  let h=`<header>${icon(id,48)}<div style="min-width:0"><h2 style="font-size:20px">${esc(nm(id))}</h2><div class="rmeta">${esc(id)}${mod?` · <a href="#m-${mod.key}" data-close="1">${esc(mod.name)}</a>`:''}</div></div><button class="btn close" id="dclose">${x.close}</button></header>`;
+  if(tip) h+=`<p class="rtip" style="margin:0">${esc(tip)}</p>`;
+  h+=`<section><h3>${x.madeBy}</h3>${prod.length?`<div class="col" style="gap:10px">${prod.map(([r])=>recipeCard(r)).join('')}</div>`:`<p class="muted" style="margin:0">${x.noRecipe}</p>`}</section>`;
+  if(uses.length) h+=`<section><h3>${x.usedIn} <span class="muted">(${(USES.get(id)||[]).length})</span></h3><div class="igrid">${uses.map(([r])=>`<button class="iitem" data-item="${esc(r.o[0].i)}">${icon(r.o[0].i,24)}<span>${esc(nm(r.o[0].i))}</span></button>`).join('')}</div></section>`;
+  const d=$('#drawer'); d.innerHTML=h; d.hidden=false; $('#scrim').hidden=false; d.scrollTop=0; $('#dclose').focus();
+}
+function closeDrawer(){$('#drawer').hidden=true; $('#scrim').hidden=true}
+function render(){
+  if(!D) return;
+  document.documentElement.lang=lang; $('#q').placeholder=u().search; $('#brandName').textContent=u().intro;
+  $('#lang-es').setAttribute('aria-pressed',lang==='es'); $('#lang-en').setAttribute('aria-pressed',lang==='en');
+  const q=$('#q').value.trim(); const r=(location.hash||'#home').slice(1);
+  const v=$('#view'); v.classList.toggle('wide', !(q.length>=2) && (r==='home'||r===''||!(r.startsWith('m-')||r==='compare'||r==='updates')));
+  if(q.length>=2){ v.innerHTML=viewSearch(q); }
+  else if(r.startsWith('m-')){ v.innerHTML=viewMod(r.slice(2)); wireMod(r.slice(2)); }
+  else if(r==='compare'){ v.innerHTML=viewCompare(); drawCompare(); }
+  else if(r==='updates'){ v.innerHTML=viewUpdates(); }
+  else v.innerHTML=viewHome();
+  markRail();
+}
+document.addEventListener('click',e=>{
+  const it=e.target.closest('[data-item]'); if(it){e.preventDefault(); openItem(it.dataset.item); return;}
+  const tb=e.target.closest('[data-tab]'); if(tb){ctab=tb.dataset.tab; document.querySelectorAll('[data-tab]').forEach(b=>b.setAttribute('aria-selected',b.dataset.tab===ctab)); drawCompare(); return;}
+  if(e.target.closest('[data-close]')) closeDrawer();
+  if(e.target.id==='dclose'||e.target.id==='scrim') closeDrawer();
+  if(e.target.closest('#rail a')){ $('#rail').classList.remove('open'); $('#q').value=''; }
+});
+document.addEventListener('keydown',e=>{if(e.key==='Escape') closeDrawer()});
+$('#menuBtn').addEventListener('click',()=>$('#rail').classList.toggle('open'));
+window.addEventListener('hashchange',()=>{$('#q').value=''; closeDrawer(); render(); window.scrollTo(0,0)});
+let qt=null; $('#q').addEventListener('input',()=>{clearTimeout(qt); qt=setTimeout(render,180)});
+function setLang(l){lang=l; try{localStorage.setItem('mpw-lang',l)}catch(e){} rail(); render(); closeDrawer();}
+$('#lang-es').addEventListener('click',()=>setLang('es')); $('#lang-en').addEventListener('click',()=>setLang('en'));
+document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('[data-copyip]');if(!b)return;const t=b.textContent;const ok=()=>{b.textContent=(lang==='es'?'¡Copiada!':'Copied!');setTimeout(()=>b.textContent=t,1500)};try{navigator.clipboard.writeText(b.dataset.copyip).then(ok,()=>{})}catch(_){}});
+fetch('data.json',{cache:'no-cache'}).then(r=>r.json()).then(d=>{D=d; buildIndexes(); rail(); render();})
+ .catch(err=>{$('#view').innerHTML=`<p>No se pudieron cargar los datos de la wiki (${esc(err.message)}). Recarga la página. / Could not load wiki data. Reload the page.</p>`});
+})();
+</script>
+
+</body></html>
